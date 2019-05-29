@@ -1,6 +1,9 @@
 package net.viperfish.ai.problemSolver;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class LimitedDepthFirstSearch<S extends State> implements ProblemSolver<S> {
 
@@ -16,14 +19,15 @@ public class LimitedDepthFirstSearch<S extends State> implements ProblemSolver<S
         if(goalStates.goalReached(initialState)) {
             return sequence;
         }
-        recursive_depth_first(initialState, null, goalStates, sequence, limit);
+        recursive_depth_first(initialState, goalStates, sequence, new HashSet<>(), limit);
         return sequence;
     }
 
-    private boolean recursive_depth_first(S parent, Action<S> action, GoalTester<S> goalTester, List<Action<S>> sequence, int limit) {
+    private boolean recursive_depth_first(S parent, GoalTester<S> goalTester, List<Action<S>> sequence, Set<S> current, int limit) {
         if (limit == 0) {
             return false;
         }
+        current.add(parent);
         for (Action<?> ac : parent.availableActions()) {
             @SuppressWarnings("unchecked")
             Action<S> a = (Action<S>) ac;
@@ -32,7 +36,12 @@ public class LimitedDepthFirstSearch<S extends State> implements ProblemSolver<S
                 sequence.add(0, a);
                 return true;
             }
-            boolean success = recursive_depth_first(next, a, goalTester, sequence, limit - 1);
+            if (current.contains(next)) {
+                continue;
+            }
+            current.add(next);
+            boolean success = recursive_depth_first(next, goalTester, sequence, current, limit - 1);
+            current.remove(next);
             if (success) {
                 sequence.add(0, a);
                 return true;
