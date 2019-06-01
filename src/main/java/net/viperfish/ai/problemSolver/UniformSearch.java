@@ -9,29 +9,31 @@ public class UniformSearch<S extends State> implements ProblemSolver<S> {
         if(goalStates.goalReached(initialState)) {
             return new LinkedList<>();
         }
-        Map<State, SearchNode<S>> parentTree = new HashMap<>();
         PriorityQueue<Candidate<S>> frontier = new PriorityQueue<>();
         frontier.offer(new Candidate<>(initialState, 0));
-        parentTree.put(initialState, new SearchNode<>(null, null, initialState, 0));
+        Map<S, SearchNode<S>> nodeTracker = new HashMap<>();
+        SearchNode<S> init = new SearchNode<>(null, null, initialState, 0);
+        nodeTracker.put(initialState, init);
         while (!frontier.isEmpty()) {
             S toExpand = frontier.poll().getToExpand();
+            SearchNode<S> current = nodeTracker.get(toExpand);
             if (goalStates.goalReached(toExpand)) {
-                parentTree.remove(initialState);
-                return SolverUtils.collect(parentTree, toExpand);
+                return SolverUtils.collect(current);
             }
             for (Action<? extends State> action : toExpand.availableActions()) {
                 @SuppressWarnings("unchecked")
                 Action<S> a = (Action<S>) action;
                 S next = a.predict(toExpand);
-                double nextCost = parentTree.get(toExpand).getCost() + a.cost();
-                if(parentTree.containsKey(next)) {
-                    if(parentTree.get(next).getCost() > nextCost) {
-                        parentTree.put(next, new SearchNode<>(toExpand, a, next, nextCost));
+                double nextCost = current.getCost() + a.cost();
+                SearchNode<S> nextNode = new SearchNode<>(current, a, next, nextCost);
+                if (nodeTracker.containsKey(next)) {
+                    if (nodeTracker.get(next).getCost() > nextCost) {
+                        nodeTracker.put(next, nextNode);
                     } else {
                         continue;
                     }
                 }
-                parentTree.put(next, new SearchNode<>(toExpand, a, next, nextCost));
+                nodeTracker.put(next, new SearchNode<>(nextNode, a, next, nextCost));
                 frontier.offer(new Candidate<>(next, nextCost));
             }
         }
