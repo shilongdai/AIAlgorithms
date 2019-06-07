@@ -31,6 +31,11 @@ public class MoveQueen implements Action<NQueenProblem> {
     }
 
     @Override
+    public Action<NQueenProblem> reverse() {
+        return new MoveQueen(newR, newC, origR, origC);
+    }
+
+    @Override
     public double cost() {
         return 1;
     }

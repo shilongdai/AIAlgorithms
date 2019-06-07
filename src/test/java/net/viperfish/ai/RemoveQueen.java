@@ -4,12 +4,12 @@ import net.viperfish.ai.classicSearch.Action;
 
 import java.util.Objects;
 
-public class PlaceQueen implements Action<NQueenProblem> {
+public class RemoveQueen implements Action<NQueenProblem> {
 
     private int row;
     private int col;
 
-    public PlaceQueen(int row, int col) {
+    public RemoveQueen(int row, int col) {
         this.row = row;
         this.col = col;
     }
@@ -17,7 +17,7 @@ public class PlaceQueen implements Action<NQueenProblem> {
     @Override
     public NQueenProblem predict(NQueenProblem current) {
         NQueenProblem result = new NQueenProblem(current);
-        result.placeQueen(row, col);
+        result.removeQueen(row, col);
         return result;
     }
 
@@ -33,14 +33,14 @@ public class PlaceQueen implements Action<NQueenProblem> {
 
     @Override
     public Action<NQueenProblem> reverse() {
-        return new RemoveQueen(row, col);
+        return new PlaceQueen(row, col);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PlaceQueen that = (PlaceQueen) o;
+        RemoveQueen that = (RemoveQueen) o;
         return row == that.row &&
                 col == that.col;
     }

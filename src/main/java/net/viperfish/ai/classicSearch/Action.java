@@ -8,4 +8,6 @@ public interface Action<S extends State> {
 
     double cost();
 
+    Action<S> reverse();
+
 }

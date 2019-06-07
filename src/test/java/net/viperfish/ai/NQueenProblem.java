@@ -44,6 +44,11 @@ public class NQueenProblem implements GeneticState, HeuristicGoalTester<NQueenPr
         queenTracker.put(r2, c2);
     }
 
+    public void removeQueen(int row, int col) {
+        board[row][col] = 0;
+        queenTracker.remove(row);
+    }
+
     public int getN() {
         return n;
     }
