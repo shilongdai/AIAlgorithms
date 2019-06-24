@@ -1,12 +1,12 @@
 package net.viperfish.ai;
 
-import net.viperfish.ai.localSearch.Randomizer;
+import net.viperfish.ai.search.deterministic.Randomizer;
 
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-public class NQueenRandomizer implements Randomizer<NQueenProblem> {
+public class NQueenRandomizer implements Randomizer {
 
     private int n;
 

@@ -1,10 +1,11 @@
 package net.viperfish.ai;
 
-import net.viperfish.ai.classicSearch.Action;
+import net.viperfish.ai.search.Action;
+import net.viperfish.ai.search.State;
 
 import java.util.Objects;
 
-public class PlaceQueen implements Action<NQueenProblem> {
+public class PlaceQueen implements Action {
 
     private int row;
     private int col;
@@ -15,14 +16,14 @@ public class PlaceQueen implements Action<NQueenProblem> {
     }
 
     @Override
-    public NQueenProblem predict(NQueenProblem current) {
-        NQueenProblem result = new NQueenProblem(current);
+    public NQueenProblem predict(State current) {
+        NQueenProblem result = new NQueenProblem((NQueenProblem) current);
         result.placeQueen(row, col);
         return result;
     }
 
     @Override
-    public NQueenProblem execute(NQueenProblem current) throws Exception {
+    public NQueenProblem execute(State current) throws Exception {
         return predict(current);
     }
 
@@ -32,7 +33,7 @@ public class PlaceQueen implements Action<NQueenProblem> {
     }
 
     @Override
-    public Action<NQueenProblem> reverse() {
+    public Action reverse() {
         return new RemoveQueen(row, col);
     }
 

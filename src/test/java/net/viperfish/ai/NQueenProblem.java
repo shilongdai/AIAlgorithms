@@ -1,14 +1,14 @@
 package net.viperfish.ai;
 
-import net.viperfish.ai.classicSearch.Action;
-import net.viperfish.ai.classicSearch.HeuristicGoalTester;
-import net.viperfish.ai.classicSearch.State;
-import net.viperfish.ai.localSearch.GeneticState;
-import net.viperfish.ai.localSearch.ObjectiveFunction;
+import net.viperfish.ai.search.Action;
+import net.viperfish.ai.search.State;
+import net.viperfish.ai.search.deterministic.Genetic;
+import net.viperfish.ai.search.deterministic.HeuristicGoalTester;
+import net.viperfish.ai.search.deterministic.ObjectiveFunction;
 
 import java.util.*;
 
-public class NQueenProblem implements GeneticState, HeuristicGoalTester<NQueenProblem>, ObjectiveFunction<NQueenProblem> {
+public class NQueenProblem implements State, Genetic, HeuristicGoalTester, ObjectiveFunction {
 
     private int n;
     private int[][] board;
@@ -54,7 +54,8 @@ public class NQueenProblem implements GeneticState, HeuristicGoalTester<NQueenPr
     }
 
     @Override
-    public double heuristic(NQueenProblem state) {
+    public double heuristic(State s) {
+        NQueenProblem state = (NQueenProblem) s;
         double h = 0;
         for (Map.Entry<Integer, Integer> e : state.queenTracker.entrySet()) {
             h += conflict(state.board, e.getKey(), e.getValue(), state.n);
@@ -64,12 +65,13 @@ public class NQueenProblem implements GeneticState, HeuristicGoalTester<NQueenPr
     }
 
     @Override
-    public double evaluate(NQueenProblem state) {
+    public double evaluate(State state) {
         return 1 / heuristic(state);
     }
 
     @Override
-    public boolean goalReached(NQueenProblem toTest) {
+    public boolean goalReached(State s) {
+        NQueenProblem toTest = (NQueenProblem) s;
         if (Math.abs(this.heuristic(toTest) - 0) > Double.MIN_NORMAL) {
             return false;
         }
@@ -77,8 +79,8 @@ public class NQueenProblem implements GeneticState, HeuristicGoalTester<NQueenPr
     }
 
     @Override
-    public Collection<? extends Action<? extends State>> availableActions() {
-        Set<Action<NQueenProblem>> actionSet = new HashSet<>();
+    public Collection<? extends Action> availableActions() {
+        Set<Action> actionSet = new HashSet<>();
         if (queenTracker.size() < n) {
             Set<Integer> availableRow = new HashSet<>();
             for (int i = 0; i < n; ++i) {
@@ -104,15 +106,17 @@ public class NQueenProblem implements GeneticState, HeuristicGoalTester<NQueenPr
     }
 
     @Override
-    public GeneticState reproduce(GeneticState other) {
-        NQueenProblem otherProblem = (NQueenProblem) other;
+    public State reproduce(State first, State second) {
+        NQueenProblem firstProblem = (NQueenProblem) first;
+        NQueenProblem otherProblem = (NQueenProblem) second;
         Random rand = new Random();
+        int n = firstProblem.n;
         int cutoff = rand.nextInt(n);
         NQueenProblem result = new NQueenProblem(n);
         result.queenTracker.clear();
         for (int i = 0; i < cutoff; ++i) {
-            if (queenTracker.containsKey(i)) {
-                result.placeQueen(i, queenTracker.get(i));
+            if (firstProblem.queenTracker.containsKey(i)) {
+                result.placeQueen(i, firstProblem.queenTracker.get(i));
             }
         }
         for (int i = cutoff; i < n; ++i) {
@@ -124,11 +128,14 @@ public class NQueenProblem implements GeneticState, HeuristicGoalTester<NQueenPr
     }
 
     @Override
-    public void mutate() {
+    public State mutate(State state) {
+        NQueenProblem np = (NQueenProblem) state;
         Random rand = new Random();
+        int n = np.n;
         int newCol = rand.nextInt(n);
         int row = rand.nextInt(n);
-        moveQueen(row, queenTracker.get(row), row, newCol);
+        np.moveQueen(row, np.queenTracker.get(row), row, newCol);
+        return np;
     }
 
     private int conflict(int[][] board, int row, int col, int n) {

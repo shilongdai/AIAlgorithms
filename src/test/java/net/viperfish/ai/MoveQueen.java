@@ -1,10 +1,11 @@
 package net.viperfish.ai;
 
-import net.viperfish.ai.classicSearch.Action;
+import net.viperfish.ai.search.Action;
+import net.viperfish.ai.search.State;
 
 import java.util.Objects;
 
-public class MoveQueen implements Action<NQueenProblem> {
+public class MoveQueen implements Action {
 
     private int origR;
     private int origC;
@@ -19,19 +20,19 @@ public class MoveQueen implements Action<NQueenProblem> {
     }
 
     @Override
-    public NQueenProblem predict(NQueenProblem current) {
-        NQueenProblem result = new NQueenProblem(current);
+    public State predict(State current) {
+        NQueenProblem result = new NQueenProblem((NQueenProblem) current);
         result.moveQueen(origR, origC, newR, newC);
         return result;
     }
 
     @Override
-    public NQueenProblem execute(NQueenProblem current) throws Exception {
+    public State execute(State current) throws Exception {
         return predict(current);
     }
 
     @Override
-    public Action<NQueenProblem> reverse() {
+    public Action reverse() {
         return new MoveQueen(newR, newC, origR, origC);
     }
 

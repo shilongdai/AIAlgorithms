@@ -1,8 +1,8 @@
 package net.viperfish.ai;
 
-import net.viperfish.ai.perceptSearch.DeterministicPrecept;
+import net.viperfish.ai.search.Precept;
 
-public class PerfectNQueenPrecept extends DeterministicPrecept<NQueenProblem> {
+public class PerfectNQueenPrecept implements Precept {
 
     private NQueenProblem state;
 
