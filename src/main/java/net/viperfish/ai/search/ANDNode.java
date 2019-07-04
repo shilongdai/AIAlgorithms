@@ -1,22 +1,17 @@
 package net.viperfish.ai.search;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+public class ANDNode<K> {
 
-public class ANDNode {
-
-    private Precept outcome;
+    private K outcome;
     private State currentState;
-    private List<ORNode> actions;
+    private ORNode<K> next;
 
-    public ANDNode(Precept outcome, State currentState) {
+    public ANDNode(K outcome, State currentState) {
         this.outcome = outcome;
         this.currentState = currentState;
-        actions = new LinkedList<>();
     }
 
-    public Precept getOutcome() {
+    public K getOutcome() {
         return outcome;
     }
 
@@ -24,21 +19,19 @@ public class ANDNode {
         return currentState;
     }
 
-    public List<ORNode> getActions() {
-        return actions;
+    public ORNode<K> getNext() {
+        return next;
+    }
+
+    public void setNext(ORNode<K> next) {
+        this.next = next;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ANDNode andNode = (ANDNode) o;
-        return Objects.equals(outcome, andNode.outcome) &&
-                Objects.equals(currentState, andNode.currentState);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(outcome, currentState);
+    public String toString() {
+        return "ANDNode{" +
+                "outcome=" + outcome +
+                ", currentState=" + currentState +
+                '}';
     }
 }

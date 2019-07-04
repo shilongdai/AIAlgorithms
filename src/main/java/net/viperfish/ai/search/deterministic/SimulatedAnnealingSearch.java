@@ -25,7 +25,7 @@ public abstract class SimulatedAnnealingSearch implements LocalSearch {
             double currentVal = objectiveFunction.evaluate(current);
             List<Action> actions = new LinkedList<>(current.availableActions());
             Action chosenAction = actions.get(rand.nextInt(actions.size()));
-            State successor = chosenAction.predict(current);
+            State successor = chosenAction.execute(current);
             double nextVal = objectiveFunction.evaluate(successor);
             if (nextVal > currentVal) {
                 current = successor;

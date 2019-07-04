@@ -25,7 +25,7 @@ public class UniformSearch implements ProblemSolver {
                 return SolverUtils.collect(current);
             }
             for (Action a : toExpand.availableActions()) {
-                State next = a.predict(toExpand);
+                State next = a.execute(toExpand);
                 double nextCost = current.getCost() + a.cost();
                 SearchNode nextNode = new SearchNode(current, a, next, nextCost);
                 if (nodeTracker.containsKey(next)) {

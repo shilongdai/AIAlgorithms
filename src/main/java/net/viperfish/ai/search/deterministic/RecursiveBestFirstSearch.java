@@ -24,7 +24,7 @@ public class RecursiveBestFirstSearch implements HeuristicProblemSolver {
         }
         PriorityQueue<HeuristicSearchNode> successors = new PriorityQueue<>();
         for (Action action : current.getCurrent().availableActions()) {
-            State next = action.predict(current.getCurrent());
+            State next = action.execute(current.getCurrent());
             double g = current.getG() + action.cost();
             double h = goalTester.heuristic(next);
             HeuristicSearchNode nextNode = new HeuristicSearchNode(current, action, next, Math.max(current.getCost(), g + h), g, h);

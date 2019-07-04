@@ -1,27 +1,28 @@
 package net.viperfish.ai.search;
 
-public class AndOrPlan implements Plan {
+public class AndOrPlan<K> implements Plan<K> {
 
-    private ORNode root;
-    private ORNode current;
+    private ANDNode<K> and;
+    private ORNode<K> current;
     private boolean endReached;
 
-    public AndOrPlan(ORNode root) {
-        this.root = root;
+    public AndOrPlan(ANDNode<K> root) {
+        this.and = root;
         endReached = false;
     }
 
     @Override
-    public Action next(Precept precept) {
+    public Action next(K precept) {
         if (current == null) {
-            current = root;
-            return root.getActionTaken();
+            current = and.getNext();
+            return current.getActionTaken();
         }
-        ANDNode possibility = current.branch(precept);
-        if (possibility == null) {
+        and = current.branch(precept);
+        if (and == null) {
             endReached = true;
             return null;
         }
+        current = and.getNext();
         return current.getActionTaken();
     }
 

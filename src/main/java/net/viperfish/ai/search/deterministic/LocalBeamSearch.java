@@ -25,7 +25,7 @@ public class LocalBeamSearch implements LocalSearch {
             }
             for (State s : states) {
                 for (Action action : s.availableActions()) {
-                    State next = action.predict(s);
+                    State next = action.execute(s);
                     double val = objectiveFunction.evaluate(next) * -1;
                     queue.add(new Candidate(next, val));
                 }

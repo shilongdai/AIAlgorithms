@@ -1,4 +1,4 @@
-package net.viperfish.ai;
+package net.viperfish.ai.queen;
 
 import net.viperfish.ai.search.Action;
 import net.viperfish.ai.search.State;
@@ -15,16 +15,10 @@ public class PlaceQueen implements Action {
         this.col = col;
     }
 
-    @Override
-    public NQueenProblem predict(State current) {
+    public NQueenProblem execute(State current) {
         NQueenProblem result = new NQueenProblem((NQueenProblem) current);
         result.placeQueen(row, col);
         return result;
-    }
-
-    @Override
-    public NQueenProblem execute(State current) throws Exception {
-        return predict(current);
     }
 
     @Override

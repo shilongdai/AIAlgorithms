@@ -1,6 +1,6 @@
 package net.viperfish.ai.search.deterministic;
 
-import net.viperfish.ai.NQueenProblem;
+import net.viperfish.ai.queen.NQueenProblem;
 
 public class LRTAStarSearchTest extends OnlineSearchTest {
     @Override

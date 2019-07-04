@@ -1,7 +1,7 @@
 package net.viperfish.ai.search.deterministic;
 
 import net.viperfish.ai.search.Action;
-import net.viperfish.ai.search.Precept;
+import net.viperfish.ai.search.PerfectPrecept;
 import net.viperfish.ai.search.State;
 import net.viperfish.ai.search.StateActionPair;
 
@@ -39,7 +39,7 @@ public class LimitedDepthFirstOnlineSearch extends OnlineSearch {
     }
 
     @Override
-    public Action next(Precept precept) {
+    public Action next(PerfectPrecept precept) {
         State preceived = precept.getState();
         if (goalTester.goalReached(preceived)) {
             previousState = preceived;

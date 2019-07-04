@@ -1,7 +1,7 @@
 package net.viperfish.ai.search.deterministic;
 
 import net.viperfish.ai.search.Action;
-import net.viperfish.ai.search.Precept;
+import net.viperfish.ai.search.PerfectPrecept;
 import net.viperfish.ai.search.State;
 import net.viperfish.ai.search.StateActionPair;
 
@@ -20,7 +20,7 @@ public class DeepeningOnlineDepthFirstSearch extends OnlineSearch {
     }
 
     @Override
-    public Action next(Precept precept) {
+    public Action next(PerfectPrecept precept) {
         Action next = current.next(precept);
         if (finished()) {
             return null;

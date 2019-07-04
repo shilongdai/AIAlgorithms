@@ -24,7 +24,7 @@ public class AStarSearch implements HeuristicProblemSolver {
                 return SolverUtils.collect(current);
             }
             for (Action a : toExpand.availableActions()) {
-                State next = a.predict(toExpand);
+                State next = a.execute(toExpand);
                 double h = goalStates.heuristic(next);
                 double g = current.getG() + a.cost();
                 HeuristicSearchNode nextNode = new HeuristicSearchNode(current, a, next, h + g, g, h);

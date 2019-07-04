@@ -1,8 +1,8 @@
-package net.viperfish.ai;
+package net.viperfish.ai.queen;
 
-import net.viperfish.ai.search.Precept;
+import net.viperfish.ai.search.PerfectPrecept;
 
-public class PerfectNQueenPrecept implements Precept {
+public class PerfectNQueenPrecept extends PerfectPrecept {
 
     private NQueenProblem state;
 

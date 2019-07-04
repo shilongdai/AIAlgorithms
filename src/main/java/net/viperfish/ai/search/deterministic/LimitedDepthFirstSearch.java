@@ -32,7 +32,7 @@ public class LimitedDepthFirstSearch implements ProblemSolver {
         }
         current.add(parent);
         for (Action a : parent.availableActions()) {
-            State next = a.predict(parent);
+            State next = a.execute(parent);
             if (goalTester.goalReached(next)) {
                 sequence.add(0, a);
                 return true;

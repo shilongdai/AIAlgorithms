@@ -1,6 +1,6 @@
 package net.viperfish.ai.search.deterministic;
 
-import net.viperfish.ai.NQueenProblem;
+import net.viperfish.ai.queen.NQueenProblem;
 import net.viperfish.ai.search.Action;
 import org.junit.Assert;
 import org.junit.Test;

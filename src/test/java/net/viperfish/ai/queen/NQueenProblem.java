@@ -1,4 +1,4 @@
-package net.viperfish.ai;
+package net.viperfish.ai.queen;
 
 import net.viperfish.ai.search.Action;
 import net.viperfish.ai.search.State;

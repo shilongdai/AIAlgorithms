@@ -1,7 +1,7 @@
 package net.viperfish.ai.search.deterministic;
 
-import net.viperfish.ai.NQueenProblem;
-import net.viperfish.ai.NQueenRandomizer;
+import net.viperfish.ai.queen.NQueenProblem;
+import net.viperfish.ai.queen.NQueenRandomizer;
 import org.junit.Assert;
 import org.junit.Test;
 

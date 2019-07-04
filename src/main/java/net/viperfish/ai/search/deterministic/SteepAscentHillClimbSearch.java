@@ -44,7 +44,7 @@ public class SteepAscentHillClimbSearch implements LocalSearch {
         State best = current;
         double val = objectiveFunction.evaluate(best);
         for (Action action : current.availableActions()) {
-            State next = action.predict(current);
+            State next = action.execute(current);
             double nextVal = objectiveFunction.evaluate(next);
             if (nextVal >= val) {
                 best = next;

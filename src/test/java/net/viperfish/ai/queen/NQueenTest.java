@@ -1,4 +1,4 @@
-package net.viperfish.ai;
+package net.viperfish.ai.queen;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,11 +29,11 @@ public class NQueenTest {
         PlaceQueen move4 = new PlaceQueen(3, 1);
         NQueenProblem test = new NQueenProblem(4);
         Assert.assertTrue(test.availableActions().contains(move1));
-        test = move1.predict(test);
+        test = move1.execute(test);
         Assert.assertTrue(test.availableActions().contains(move2));
-        test = move2.predict(test);
+        test = move2.execute(test);
         Assert.assertTrue(test.availableActions().contains(move3));
-        test = move3.predict(test);
+        test = move3.execute(test);
         Assert.assertTrue(test.availableActions().contains(move4));
 
     }

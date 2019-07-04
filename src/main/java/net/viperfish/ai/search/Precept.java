@@ -1,7 +1,9 @@
 package net.viperfish.ai.search;
 
+import java.util.Collection;
+
 public interface Precept {
 
-    State getState();
+    Collection<State> measure();
 
 }

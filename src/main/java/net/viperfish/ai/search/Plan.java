@@ -1,8 +1,8 @@
 package net.viperfish.ai.search;
 
-public interface Plan {
+public interface Plan<K> {
 
-    Action next(Precept precept);
+    Action next(K precept);
 
     boolean finished();
 

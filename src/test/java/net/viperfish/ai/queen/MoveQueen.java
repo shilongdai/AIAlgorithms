@@ -1,4 +1,4 @@
-package net.viperfish.ai;
+package net.viperfish.ai.queen;
 
 import net.viperfish.ai.search.Action;
 import net.viperfish.ai.search.State;
@@ -20,15 +20,10 @@ public class MoveQueen implements Action {
     }
 
     @Override
-    public State predict(State current) {
+    public State execute(State current) {
         NQueenProblem result = new NQueenProblem((NQueenProblem) current);
         result.moveQueen(origR, origC, newR, newC);
         return result;
-    }
-
-    @Override
-    public State execute(State current) throws Exception {
-        return predict(current);
     }
 
     @Override
