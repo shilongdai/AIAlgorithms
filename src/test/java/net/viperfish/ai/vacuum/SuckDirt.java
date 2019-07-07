@@ -8,7 +8,7 @@ public class SuckDirt implements Action {
     @Override
     public VacuumWorld execute(State current) {
         VacuumWorld vacuumWorld = (VacuumWorld) current;
-        VacuumWorld newWorld = new NondeterministicVacuumWorld(vacuumWorld.getX(), vacuumWorld);
+        VacuumWorld newWorld = new VacuumWorld(vacuumWorld.getX(), vacuumWorld);
         newWorld.suck();
         return newWorld;
     }

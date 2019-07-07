@@ -36,4 +36,11 @@ public class BeliefState implements State {
         }
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "BeliefState{" +
+                "states=" + states +
+                '}';
+    }
 }

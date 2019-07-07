@@ -26,7 +26,7 @@ public abstract class PartialObserveSearchTest {
 
         BeliefState initial = new BeliefState(Arrays.asList(poss1, poss2, poss3, poss4, poss5, poss6, poss7, poss8));
         BeliefStateSearch alg = getAlg();
-        Plan<Precept> result = alg.solve(initial, new PartiallyObservableVacuumWorld(0));
+        Plan<Precept> result = alg.solve(initial, new BeliefStateGoalTester(new PartiallyObservableVacuumWorld(0)));
         System.out.println("Search Finished");
         while (true) {
             Action next = result.next(new DirtyPrecept(poss1.currentClean()));

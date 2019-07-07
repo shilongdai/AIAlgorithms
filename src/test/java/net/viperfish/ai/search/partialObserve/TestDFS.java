@@ -1,8 +1,8 @@
 package net.viperfish.ai.search.partialObserve;
 
-public class TestLimitedDFS extends PartialObserveSearchTest {
+public class TestDFS extends PartialObserveSearchTest {
     @Override
     protected BeliefStateSearch getAlg() {
-        return new LimitedBeliefStateDFS(6);
+        return new IterativeDeepeningBeliefDFS();
     }
 }

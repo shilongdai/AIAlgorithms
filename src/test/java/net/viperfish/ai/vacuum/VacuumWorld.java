@@ -3,7 +3,6 @@ package net.viperfish.ai.vacuum;
 import net.viperfish.ai.search.Action;
 import net.viperfish.ai.search.State;
 import net.viperfish.ai.search.deterministic.GoalTester;
-import net.viperfish.ai.search.partialObserve.BeliefState;
 
 import java.util.*;
 
@@ -46,7 +45,7 @@ public class VacuumWorld implements State, GoalTester {
     }
 
     public void suck() {
-        grid[x] = true;
+        grid[x] = false;
     }
 
     public int getX() {
@@ -75,14 +74,7 @@ public class VacuumWorld implements State, GoalTester {
 
     @Override
     public boolean goalReached(State toTest) {
-        BeliefState world = (BeliefState) toTest;
-        for (State s : world.possibilities()) {
-            VacuumWorld w = (VacuumWorld) s;
-            if (!w.clean()) {
-                return false;
-            }
-        }
-        return true;
+        return ((VacuumWorld) toTest).clean();
     }
 
     @Override

@@ -37,7 +37,7 @@ public class PartiallyObservableVacuumWorld extends VacuumWorld implements Obser
         if (grid[0] && grid[1]) {
             return Arrays.asList(new DirtyPrecept(true));
         }
-        if (!grid[0] & !grid[1]) {
+        if (!grid[0] && !grid[1]) {
             return Arrays.asList(new DirtyPrecept(false));
         }
         return Arrays.asList(new DirtyPrecept(true), new DirtyPrecept(false));
