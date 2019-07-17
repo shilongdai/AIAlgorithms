@@ -10,19 +10,12 @@ public abstract class TestGame {
 
     @Test
     public void testGamePlay() {
-        GameSearch firstPlayer = getAlg();
-        GameSearch secondPlayer = getAlg();
-
+        GameSearch player = getAlg();
         TicTacGame game = new TicTacGame();
         boolean first = true;
         while (!game.goalReached(game)) {
-            GameSearch player;
-            if (first) {
-                player = firstPlayer;
-            } else {
-                player = secondPlayer;
-            }
-            Action action = player.search(game, game, first);
+            Action action;
+            action = player.search(game, game, first);
             game = (TicTacGame) action.execute(game);
             first = !first;
         }

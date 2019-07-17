@@ -7,6 +7,8 @@ import net.viperfish.ai.search.deterministic.HeuristicGoalTester;
 public class LimitedDepthMinimaxSearch implements GameSearch {
 
     private int limit;
+    private double alpha;
+    private double beta;
 
     public LimitedDepthMinimaxSearch(int limit) {
         this.limit = limit;
@@ -14,6 +16,9 @@ public class LimitedDepthMinimaxSearch implements GameSearch {
 
     @Override
     public Action search(State current, HeuristicGoalTester goalTester, boolean max) {
+        alpha = Double.NEGATIVE_INFINITY;
+        beta = Double.POSITIVE_INFINITY;
+
         Action result = null;
         double currentBest;
         if (max) {
@@ -54,6 +59,12 @@ public class LimitedDepthMinimaxSearch implements GameSearch {
             if (minimax < currentMin) {
                 currentMin = minimax;
             }
+            if (currentMin <= alpha) {
+                return currentMin;
+            }
+            if (currentMin < beta) {
+                beta = currentMin;
+            }
         }
         return currentMin;
     }
@@ -72,6 +83,12 @@ public class LimitedDepthMinimaxSearch implements GameSearch {
             double minimax = searchMin(candidate, goalTester, limit - 1);
             if (minimax > currentMax) {
                 currentMax = minimax;
+            }
+            if (currentMax >= beta) {
+                return currentMax;
+            }
+            if (currentMax > alpha) {
+                alpha = currentMax;
             }
         }
         return currentMax;
