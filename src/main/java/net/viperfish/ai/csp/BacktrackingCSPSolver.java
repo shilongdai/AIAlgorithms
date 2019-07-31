@@ -1,7 +1,10 @@
 package net.viperfish.ai.csp;
 
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class BacktrackingCSPSolver implements CSPSolver {
 
@@ -13,54 +16,44 @@ public class BacktrackingCSPSolver implements CSPSolver {
 
     @Override
     public ConstraintProblem solve(ConstraintProblem problem) {
-        Map<String, SortedSet<Integer>> conflictSets = new HashMap<>();
+        Set<String> assigned = new HashSet<>();
         for (String i : problem.variables()) {
-            conflictSets.put(i, new TreeSet<>());
+            Variable<Object> v = problem.getVariable(i, Object.class);
+            if (v.getValue() != null) {
+                assigned.add(i);
+            }
         }
-        BackTrackStatus status = backtrack(problem, new HashMap<>(), conflictSets, 0);
-        return status.getCsp();
+        return backtrack(problem, assigned);
     }
 
-    private BackTrackStatus backtrack(ConstraintProblem csp, Map<String, Integer> assignedVariables, Map<String, SortedSet<Integer>> conflictSets, int depth) {
-        if (assignedVariables.keySet().equals(csp.variables())) {
-            return new BackTrackStatus(csp, new TreeSet<>());
+    private ConstraintProblem backtrack(ConstraintProblem csp, Set<String> assignedVariables) {
+        if (assignedVariables.equals(csp.variables())) {
+            return csp;
         }
         ConstraintProblem orig = csp;
         String nextVarName = selectVariable(csp, assignedVariables);
         Variable<Object> var = orig.getVariable(nextVarName, Object.class);
-        fillConflictSet(csp, assignedVariables, conflictSets, nextVarName);
         for (Object o : orderValues(var.getRealDomain())) {
             csp = new ConstraintProblem(orig);
             var = csp.getVariable(nextVarName, Object.class);
             var.setValue(o);
             if (consistent(csp, assignedVariables, nextVarName)) {
                 if (inference.makeConsistent(csp, nextVarName)) {
-                    assignedVariables.put(nextVarName, depth);
-                    BackTrackStatus result = backtrack(csp, assignedVariables, conflictSets, depth + 1);
-                    if (result.failed()) {
-                        SortedSet<Integer> current = conflictSets.get(nextVarName);
-                        current.addAll(result.getConflictSet());
-                        current.remove(depth);
-                        if (current.last() == depth) {
-                            continue;
-                        }
-                    } else {
+                    assignedVariables.add(nextVarName);
+                    ConstraintProblem result = backtrack(csp, assignedVariables);
+                    if (result != null) {
                         return result;
                     }
                 }
             }
         }
-
-        // backtrack to latest conflict
-        SortedSet<Integer> conflictSet = conflictSets.get(nextVarName);
-        BackTrackStatus status = new BackTrackStatus(null, conflictSet);
-        conflictSets.get(nextVarName).clear();
-        return status;
+        assignedVariables.remove(nextVarName);
+        return null;
     }
 
-    private String selectVariable(ConstraintProblem csp, Map<String, Integer> assignedVars) {
+    private String selectVariable(ConstraintProblem csp, Set<String> assignedVars) {
         Set<String> unassigned = csp.variables();
-        unassigned.removeAll(assignedVars.keySet());
+        unassigned.removeAll(assignedVars);
         return unassigned.iterator().next();
     }
 
@@ -68,31 +61,15 @@ public class BacktrackingCSPSolver implements CSPSolver {
         return new LinkedList<>(values);
     }
 
-    private boolean consistent(ConstraintProblem csp, Map<String, Integer> assignedVar, String current) {
+    private boolean consistent(ConstraintProblem csp, Set<String> assignedVar, String current) {
         for (Constraint c : csp.constraints(current)) {
-            if (assignedVar.keySet().contains(c.getDest())) {
+            if (assignedVar.contains(c.getDest())) {
                 if (!c.validate(csp)) {
                     return false;
                 }
             }
         }
         return true;
-    }
-
-    private void fillConflictSet(ConstraintProblem csp, Map<String, Integer> assigned, Map<String, SortedSet<Integer>> conflictSet, String current) {
-        Variable<Object> currentVar = csp.getVariable(current, Object.class);
-        Object orig = currentVar.getValue();
-        for (Object o : currentVar.getRealDomain()) {
-            currentVar.setValue(o);
-            for (Constraint c : csp.constraints(current)) {
-                if (assigned.keySet().contains(c.getDest())) {
-                    if (!c.validate(csp)) {
-                        conflictSet.get(current).add(assigned.get(c.getDest()));
-                    }
-                }
-            }
-        }
-        currentVar.setValue(orig);
     }
 
 }
