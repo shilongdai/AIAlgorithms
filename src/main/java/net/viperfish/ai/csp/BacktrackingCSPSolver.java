@@ -1,10 +1,7 @@
 package net.viperfish.ai.csp;
 
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BacktrackingCSPSolver implements CSPSolver {
 
@@ -33,7 +30,7 @@ public class BacktrackingCSPSolver implements CSPSolver {
         ConstraintProblem orig = csp;
         String nextVarName = selectVariable(csp, assignedVariables);
         Variable<Object> var = orig.getVariable(nextVarName, Object.class);
-        for (Object o : orderValues(var.getRealDomain())) {
+        for (Object o : orderValues(csp, nextVarName)) {
             csp = new ConstraintProblem(orig);
             var = csp.getVariable(nextVarName, Object.class);
             var.setValue(o);
@@ -53,12 +50,51 @@ public class BacktrackingCSPSolver implements CSPSolver {
 
     private String selectVariable(ConstraintProblem csp, Set<String> assignedVars) {
         Set<String> unassigned = csp.variables();
+        TreeMap<Integer, Set<String>> buffer = new TreeMap<>();
         unassigned.removeAll(assignedVars);
-        return unassigned.iterator().next();
+        for (String i : unassigned) {
+            int size = csp.getVariable(i, Object.class).getVariation().size();
+            if (!buffer.containsKey(size)) {
+                buffer.put(size, new HashSet<>());
+            }
+            buffer.get(size).add(i);
+        }
+        Map.Entry<Integer, Set<String>> leastValue = buffer.firstEntry();
+        String next = null;
+        int maxConstraint = Integer.MIN_VALUE;
+        for (String i : leastValue.getValue()) {
+            int inverseConst = csp.inverseConstraints(i).size();
+            if (inverseConst > maxConstraint) {
+                next = i;
+                maxConstraint = inverseConst;
+            }
+        }
+        return next;
     }
 
-    private List<Object> orderValues(Set<Object> values) {
-        return new LinkedList<>(values);
+    private List<Object> orderValues(ConstraintProblem csp, String varName) {
+        Variable<Object> var = csp.getVariable(varName, Object.class);
+        TreeMap<Integer, List<Object>> ordered = new TreeMap<>();
+        for (Object o : var.getVariation()) {
+            var.setValue(o);
+            int elimination = 0;
+            for (Constraint c : csp.inverseConstraints(varName)) {
+                if (!c.validate(csp)) {
+                    elimination += 1;
+                }
+            }
+            elimination *= -1;
+            if (!ordered.containsKey(elimination)) {
+                ordered.put(elimination, new ArrayList<>());
+            }
+            ordered.get(elimination).add(o);
+        }
+        List<Object> result = new LinkedList<>();
+        for (Integer i : ordered.descendingKeySet()) {
+            result.addAll(ordered.get(i));
+        }
+        var.setValue(null);
+        return result;
     }
 
     private boolean consistent(ConstraintProblem csp, Set<String> assignedVar, String current) {
