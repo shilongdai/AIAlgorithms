@@ -29,10 +29,9 @@ public class BacktrackingCSPSolver implements CSPSolver {
         }
         ConstraintProblem orig = csp;
         String nextVarName = selectVariable(csp, assignedVariables);
-        Variable<Object> var = orig.getVariable(nextVarName, Object.class);
         for (Object o : orderValues(csp, nextVarName)) {
             csp = new ConstraintProblem(orig);
-            var = csp.getVariable(nextVarName, Object.class);
+            Variable<Object> var = csp.getVariable(nextVarName, Object.class);
             var.setValue(o);
             if (consistent(csp, assignedVariables, nextVarName)) {
                 if (inference.makeConsistent(csp, nextVarName)) {

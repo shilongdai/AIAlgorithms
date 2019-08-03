@@ -1,13 +1,8 @@
 package net.viperfish.ai.csp;
 
 import org.junit.Assert;
-import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public abstract class TestCSP {
-
+public class TestCSP {
     public ConstraintProblem mapColoring() {
         ConstraintProblem csp = new ConstraintProblem();
         csp.addVariable("WA", new MapColor(null));
@@ -165,12 +160,8 @@ public abstract class TestCSP {
         return problem;
     }
 
-    @Test
-    public void testSolveColorMap() {
-        ConstraintProblem mapColoring = mapColoring();
-        CSPSolver solver = solver();
-        mapColoring = solver.solve(mapColoring);
 
+    protected void checkSolvedMap(ConstraintProblem mapColoring) {
         Variable<Color> wa = mapColoring.getVariable("WA", Color.class);
         Variable<Color> nt = mapColoring.getVariable("NT", Color.class);
         Variable<Color> sa = mapColoring.getVariable("SA", Color.class);
@@ -189,34 +180,64 @@ public abstract class TestCSP {
         Assert.assertNotEquals(qld.getValue(), nsw.getValue());
         Assert.assertNotEquals(nsw.getValue(), vic.getValue());
         Assert.assertNotEquals(vic.getValue(), ls.getValue());
-
-        System.out.println("West Australia: " + wa.getValue());
-        System.out.println("Northern Territory: " + nt.getValue());
-        System.out.println("South Australia: " + sa.getValue());
-        System.out.println("Queensland:" + qld.getValue());
-        System.out.println("New South Wale:" + nsw.getValue());
-        System.out.println("Victoria: " + vic.getValue());
-        System.out.println("Launcestone:" + ls.getValue());
     }
 
-    @Test
-    public void testSolveZebra() {
-        ConstraintProblem zebra = zebraProblem();
-        CSPSolver solver = solver();
-        zebra = solver.solve(zebra);
+    protected void checkSolvedZebra(ConstraintProblem zebra) {
+        Variable<Integer> english = zebra.getVariable("English", Integer.class);
+        Variable<Integer> redHouse = zebra.getVariable("Red", Integer.class);
+        Assert.assertEquals(english.getValue(), redHouse.getValue());
+
+        Variable<Integer> spaniard = zebra.getVariable("Spaniard", Integer.class);
+        Variable<Integer> dog = zebra.getVariable("Dog", Integer.class);
+        Assert.assertEquals(spaniard.getValue(), dog.getValue());
+
+        Variable<Integer> green = zebra.getVariable("Green", Integer.class);
+        Variable<Integer> coffee = zebra.getVariable("Coffee", Integer.class);
+        Assert.assertEquals(green.getValue(), coffee.getValue());
+
+        Variable<Integer> irish = zebra.getVariable("Irish", Integer.class);
+        Variable<Integer> tea = zebra.getVariable("Tea", Integer.class);
+        Assert.assertEquals(irish.getValue(), tea.getValue());
+
+        Variable<Integer> ivory = zebra.getVariable("Ivory", Integer.class);
+        Assert.assertEquals(ivory.getValue().intValue(), green.getValue() - 1);
+
+        Variable<Integer> go = zebra.getVariable("Go", Integer.class);
+        Variable<Integer> snail = zebra.getVariable("Snail", Integer.class);
+        Assert.assertEquals(go.getValue(), snail.getValue());
+
+        Variable<Integer> cricket = zebra.getVariable("Cricket", Integer.class);
+        Variable<Integer> yellow = zebra.getVariable("Yellow", Integer.class);
+        Assert.assertEquals(yellow.getValue(), cricket.getValue());
+
+        Variable<Integer> milk = zebra.getVariable("Milk", Integer.class);
+        Assert.assertEquals(2, milk.getValue().intValue());
+
+        Variable<Integer> nigerian = zebra.getVariable("Nigerian", Integer.class);
+        Assert.assertEquals(0, nigerian.getValue().intValue());
+
+        Variable<Integer> judo = zebra.getVariable("Judo", Integer.class);
+        Variable<Integer> fox = zebra.getVariable("Fox", Integer.class);
+        Assert.assertEquals(1, Math.abs(judo.getValue() - fox.getValue()));
+
+        Variable<Integer> horse = zebra.getVariable("Horse", Integer.class);
+        Assert.assertEquals(1, Math.abs(cricket.getValue() - horse.getValue()));
+
+        Variable<Integer> poker = zebra.getVariable("Poker", Integer.class);
+        Variable<Integer> orange = zebra.getVariable("Juice", Integer.class);
+        Assert.assertEquals(poker.getValue(), orange.getValue());
+
+        Variable<Integer> japanese = zebra.getVariable("Japanese", Integer.class);
+        Variable<Integer> polo = zebra.getVariable("Polo", Integer.class);
+        Assert.assertEquals(japanese.getValue(), polo.getValue());
+
+        Variable<Integer> blue = zebra.getVariable("Blue", Integer.class);
+        Assert.assertEquals(1, Math.abs(nigerian.getValue() - blue.getValue()));
 
         Variable<Integer> petZebra = zebra.getVariable("Zebra", Integer.class);
         Variable<Integer> drinkGuinness = zebra.getVariable("Guinness", Integer.class);
-        Variable<Integer> japanese = zebra.getVariable("Japanese", Integer.class);
-        Variable<Integer> nigerian = zebra.getVariable("Nigerian", Integer.class);
-        List<String> sorted = new ArrayList<>(zebra.variables());
-        for (String i : sorted) {
-            System.out.println(String.format("%s: %d", i, zebra.getVariable(i, Integer.class).getValue()));
-        }
         Assert.assertEquals(petZebra.getValue(), japanese.getValue());
         Assert.assertEquals(drinkGuinness.getValue(), nigerian.getValue());
     }
-
-    protected abstract CSPSolver solver();
 
 }
