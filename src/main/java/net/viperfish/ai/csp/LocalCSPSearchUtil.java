@@ -34,4 +34,33 @@ public final class LocalCSPSearchUtil {
         return conflicts.get(rand.nextInt(conflicts.size()));
     }
 
+    public static int weightedConflict(Map<Constraint, Integer> weights, ConstraintProblem csp) {
+        int result = 0;
+        for (String i : csp.variables()) {
+            for (Constraint c : csp.constraints(i)) {
+                if (!c.validate(csp)) {
+                    if (!weights.containsKey(c)) {
+                        weights.put(c, 1);
+                    }
+                    int weight = weights.get(c);
+                    result += weight;
+                    weights.put(c, weight + 1);
+                }
+            }
+        }
+        return result;
+    }
+
+    public static ConstraintProblem randomVariables(ConstraintProblem csp) {
+        Random rand = new Random();
+        csp = new ConstraintProblem(csp);
+        for (String i : csp.variables()) {
+            Variable<Object> var = csp.getVariable(i, Object.class);
+            List<Object> domain = new ArrayList<>(var.getRealDomain());
+            Object val = domain.get(rand.nextInt(domain.size()));
+            var.setValue(val);
+        }
+        return csp;
+    }
+
 }

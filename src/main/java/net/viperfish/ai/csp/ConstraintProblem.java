@@ -39,7 +39,7 @@ public class ConstraintProblem {
         for (List<Constraint> constraints : normal.values()) {
             for (Constraint c : constraints) {
                 if (!result.containsKey(c.getDest())) {
-                    result.put(c.getDest(), new LinkedList<>());
+                    result.put(c.getDest(), new ArrayList<>());
                 }
                 result.get(c.getDest()).add(c);
             }
@@ -72,22 +72,30 @@ public class ConstraintProblem {
 
     public void addConstraint(Constraint constraint) {
         if (!adjacencyList.containsKey(constraint.getSrc())) {
-            adjacencyList.put(constraint.getSrc(), new LinkedList<>());
+            adjacencyList.put(constraint.getSrc(), new ArrayList<>());
         }
         adjacencyList.get(constraint.getSrc()).add(constraint);
 
         if (!inverseAdjacencyList.containsKey(constraint.getDest())) {
-            inverseAdjacencyList.put(constraint.getDest(), new LinkedList<>());
+            inverseAdjacencyList.put(constraint.getDest(), new ArrayList<>());
         }
         inverseAdjacencyList.get(constraint.getDest()).add(constraint);
     }
 
     public List<Constraint> constraints(String variableName) {
-        return adjacencyList.getOrDefault(variableName, new LinkedList<>());
+        return adjacencyList.getOrDefault(variableName, new ArrayList<>());
+    }
+
+    public List<Constraint> constraints() {
+        List<Constraint> result = new ArrayList<>();
+        for (Map.Entry<String, List<Constraint>> e : adjacencyList.entrySet()) {
+            result.addAll(e.getValue());
+        }
+        return result;
     }
 
     public List<Constraint> inverseConstraints(String varName) {
-        return inverseAdjacencyList.getOrDefault(varName, new LinkedList<>());
+        return inverseAdjacencyList.getOrDefault(varName, new ArrayList<>());
     }
 
     public List<String> topologicalSort() {

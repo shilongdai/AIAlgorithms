@@ -1,5 +1,7 @@
 package net.viperfish.ai.csp;
 
+import java.util.Objects;
+
 public class DifferentByConstraint extends Constraint {
 
     private int amount;
@@ -20,5 +22,19 @@ public class DifferentByConstraint extends Constraint {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        DifferentByConstraint that = (DifferentByConstraint) o;
+        return amount == that.amount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), amount);
     }
 }
