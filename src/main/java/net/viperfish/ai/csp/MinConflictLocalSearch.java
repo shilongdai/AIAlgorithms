@@ -65,15 +65,6 @@ public class MinConflictLocalSearch implements CSPSolver {
         return null;
     }
 
-    private void printCSP(ConstraintProblem csp) {
-        System.out.println("\n----------------------Trying-------------------\n");
-        for (String i : csp.variables()) {
-            Variable<Object> var = csp.getVariable(i, Object.class);
-            System.out.println(i + ": " + var.getValue());
-        }
-        System.out.println("\n------------------------------------------------\n");
-    }
-
     private static class Candidate implements Comparable<Candidate> {
         private int conflict;
         private Object value;
