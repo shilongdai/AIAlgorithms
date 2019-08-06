@@ -1,14 +1,59 @@
 package net.viperfish.ai.csp;
 
-
 import java.util.*;
 
 public class BacktrackingCSPSolver implements CSPSolver {
 
     private Inference inference;
+    private List<VariableHeuristic> varHeuristics;
+    private List<ValueHeuristic> valHeuristics;
+    private double delta;
+
+    public BacktrackingCSPSolver() {
+        this(new AC3());
+    }
 
     public BacktrackingCSPSolver(Inference inference) {
+        this(inference, new ArrayList<>());
+    }
+
+    public BacktrackingCSPSolver(Inference inference, List<VariableHeuristic> varHeuristics) {
+        this(inference, varHeuristics, new ArrayList<>());
+    }
+
+    public BacktrackingCSPSolver(Inference inference, List<VariableHeuristic> varHeuristics, List<ValueHeuristic> valHeuristics) {
+        this(inference, varHeuristics, valHeuristics, Double.MIN_NORMAL * 4);
+    }
+
+    public BacktrackingCSPSolver(Inference inference, List<VariableHeuristic> varHeuristics, List<ValueHeuristic> valHeuristics, double delta) {
         this.inference = inference;
+        this.varHeuristics = new ArrayList<>(varHeuristics);
+        this.valHeuristics = new ArrayList<>(valHeuristics);
+        this.delta = delta;
+    }
+
+    public void addVarHeuristic(VariableHeuristic h) {
+        this.varHeuristics.add(h);
+    }
+
+    public void removeVarHeuristic(VariableHeuristic h) {
+        this.varHeuristics.remove(h);
+    }
+
+    public void addValHeuristic(ValueHeuristic h) {
+        valHeuristics.add(h);
+    }
+
+    public void removeValHeuristic(ValueHeuristic h) {
+        this.valHeuristics.remove(h);
+    }
+
+    public void clearValHeuristics() {
+        this.valHeuristics.clear();
+    }
+
+    public void clearVarHeuristics() {
+        varHeuristics.clear();
     }
 
     @Override
@@ -49,50 +94,60 @@ public class BacktrackingCSPSolver implements CSPSolver {
 
     private String selectVariable(ConstraintProblem csp, Set<String> assignedVars) {
         Set<String> unassigned = csp.variables();
-        TreeMap<Integer, Set<String>> buffer = new TreeMap<>();
         unassigned.removeAll(assignedVars);
-        for (String i : unassigned) {
-            int size = csp.getVariable(i, Object.class).getVariation().size();
-            if (!buffer.containsKey(size)) {
-                buffer.put(size, new HashSet<>());
+        TreeMap<Double, Set<String>> buffer = new TreeMap<>();
+        for (VariableHeuristic h : this.varHeuristics) {
+            for (String i : unassigned) {
+                double estimate = h.evaluate(csp, assignedVars, i);
+                if (!buffer.containsKey(estimate)) {
+                    buffer.put(estimate, new HashSet<>());
+                }
+                buffer.get(estimate).add(i);
             }
-            buffer.get(size).add(i);
-        }
-        Map.Entry<Integer, Set<String>> leastValue = buffer.firstEntry();
-        String next = null;
-        int maxConstraint = Integer.MIN_VALUE;
-        for (String i : leastValue.getValue()) {
-            int inverseConst = csp.inverseConstraints(i).size();
-            if (inverseConst > maxConstraint) {
-                next = i;
-                maxConstraint = inverseConst;
+            Double best = buffer.firstKey();
+            for (Double d : buffer.navigableKeySet()) {
+                if (Math.abs(d - best) > delta) {
+                    unassigned.removeAll(buffer.get(d));
+                }
             }
+            buffer.clear();
         }
-        return next;
+
+        List<String> result = new ArrayList<>(unassigned);
+        return result.get(new Random().nextInt(result.size()));
     }
 
     private List<Object> orderValues(ConstraintProblem csp, String varName) {
-        Variable<Object> var = csp.getVariable(varName, Object.class);
-        TreeMap<Integer, List<Object>> ordered = new TreeMap<>();
-        for (Object o : var.getVariation()) {
-            var.setValue(o);
-            int elimination = 0;
-            for (Constraint c : csp.inverseConstraints(varName)) {
-                if (!c.validate(csp)) {
-                    elimination += 1;
+        List<ValueOrderingCandidate> buffer = new ArrayList<>();
+        List<ValueHeuristic> heuristics = this.valHeuristics;
+        Variable<Object> target = csp.getVariable(varName, Object.class);
+        if (heuristics.size() == 0) {
+            return new ArrayList<>(target.getVariation());
+        }
+
+        // first pass through
+        ValueHeuristic initial = heuristics.get(0);
+        for (Object o : target.getVariation()) {
+            buffer.add(new ValueOrderingCandidate(initial.evaluate(csp, varName, o), o));
+        }
+        Collections.sort(buffer);
+
+        // use other heuristics to sort equal sections
+        for (int i = 1; i < heuristics.size(); ++i) {
+            int start = 0;
+            for (int j = 1; j <= buffer.size(); ++j) {
+                ValueOrderingCandidate c = buffer.get(i - 1);
+                ValueOrderingCandidate startCandidate = buffer.get(start);
+                if (c.getH() - startCandidate.getH() > delta) {
+                    Collections.sort(buffer.subList(start, j));
+                    start = j;
                 }
             }
-            elimination *= -1;
-            if (!ordered.containsKey(elimination)) {
-                ordered.put(elimination, new ArrayList<>());
-            }
-            ordered.get(elimination).add(o);
         }
-        List<Object> result = new LinkedList<>();
-        for (Integer i : ordered.descendingKeySet()) {
-            result.addAll(ordered.get(i));
+        List<Object> result = new ArrayList<>();
+        for (ValueOrderingCandidate c : buffer) {
+            result.add(c.getValue());
         }
-        var.setValue(null);
         return result;
     }
 
@@ -105,6 +160,52 @@ public class BacktrackingCSPSolver implements CSPSolver {
             }
         }
         return true;
+    }
+
+    private static class ValueOrderingCandidate implements Comparable<ValueOrderingCandidate> {
+
+        private double h;
+        private Object value;
+
+        public ValueOrderingCandidate(double h, Object value) {
+            this.h = h;
+            this.value = value;
+        }
+
+        public double getH() {
+            return h;
+        }
+
+        public void setH(double h) {
+            this.h = h;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public void setValue(Object value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ValueOrderingCandidate that = (ValueOrderingCandidate) o;
+            return Double.compare(that.h, h) == 0 &&
+                    Objects.equals(value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(h, value);
+        }
+
+        @Override
+        public int compareTo(ValueOrderingCandidate valueOrderingCandidate) {
+            return Double.compare(this.h, valueOrderingCandidate.h);
+        }
     }
 
 }

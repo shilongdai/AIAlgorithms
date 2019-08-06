@@ -15,11 +15,15 @@ public class DifferentByConstraint extends Constraint {
     public boolean validate(ConstraintProblem csp) {
         Variable<Integer> a = csp.getVariable(getSrc(), Integer.class);
         Variable<Integer> b = csp.getVariable(getDest(), Integer.class);
-
-        for (int i : b.getVariation()) {
-            if (Math.abs(i - a.getValue()) == amount) {
-                return true;
+        try {
+            for (int i : b.getVariation()) {
+                if (Math.abs(i - a.getValue()) == amount) {
+                    return true;
+                }
             }
+        } catch (NullPointerException e) {
+            System.out.println("null detected");
+            return false;
         }
         return false;
     }
