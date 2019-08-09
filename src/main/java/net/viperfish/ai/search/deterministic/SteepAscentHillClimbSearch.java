@@ -7,8 +7,8 @@ public class SteepAscentHillClimbSearch implements LocalSearch {
 
     private int sideLimit;
 
-    public SteepAscentHillClimbSearch(int limit) {
-        this.sideLimit = limit;
+    public SteepAscentHillClimbSearch(int sideLimit) {
+        this.sideLimit = sideLimit;
     }
 
     @Override
@@ -32,10 +32,10 @@ public class SteepAscentHillClimbSearch implements LocalSearch {
                 if (limit-- != 0) {
                     current = best;
                 } else {
-                    return null;
+                    return current;
                 }
             } else {
-                return null;
+                return best;
             }
         }
     }

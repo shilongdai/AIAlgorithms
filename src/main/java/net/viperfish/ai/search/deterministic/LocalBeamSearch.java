@@ -10,12 +10,19 @@ import java.util.PriorityQueue;
 
 public class LocalBeamSearch implements LocalSearch {
 
+    private int limit;
+
+    public LocalBeamSearch(int limit) {
+        this.limit = limit;
+    }
+
     @Override
     public State solve(Iterable<? extends State> initialStates, ObjectiveFunction objectiveFunction, GoalTester goalTester) {
         List<State> states = new ArrayList<>();
         initialStates.forEach(states::add);
         PriorityQueue<Candidate> queue = new PriorityQueue<>();
-        while (true) {
+        int current = 0;
+        while (current < limit) {
             State potential = goalReached(states, goalTester);
             if (potential != null) {
                 return potential;
@@ -39,7 +46,12 @@ public class LocalBeamSearch implements LocalSearch {
                 }
                 states.add(best.getToExpand());
             }
+            current += 1;
         }
+        if (queue.size() == 0) {
+            return null;
+        }
+        return queue.peek().getToExpand();
     }
 
     private State goalReached(Iterable<State> states, GoalTester goalTester) {

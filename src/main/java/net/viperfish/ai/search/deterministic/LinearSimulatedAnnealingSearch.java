@@ -5,7 +5,8 @@ public class LinearSimulatedAnnealingSearch extends SimulatedAnnealingSearch {
     private double initialTemp;
     private double rate;
 
-    public LinearSimulatedAnnealingSearch(double initialTemp, double rate) {
+    public LinearSimulatedAnnealingSearch(double initialTemp, double rate, int limit) {
+        super(limit);
         this.initialTemp = initialTemp;
         this.rate = rate;
     }

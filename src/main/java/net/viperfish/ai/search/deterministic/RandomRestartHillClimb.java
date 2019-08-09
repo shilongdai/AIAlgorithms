@@ -9,10 +9,12 @@ public class RandomRestartHillClimb implements LocalSearch {
 
     private LocalSearch search;
     private Randomizer randomizer;
+    private int limit;
 
-    public RandomRestartHillClimb(LocalSearch searcher, Randomizer randomizer) {
+    public RandomRestartHillClimb(LocalSearch searcher, Randomizer randomizer, int limit) {
         this.search = searcher;
         this.randomizer = randomizer;
+        this.limit = limit;
     }
 
     @Override
@@ -20,7 +22,11 @@ public class RandomRestartHillClimb implements LocalSearch {
         State solution = null;
         List<State> initial = new ArrayList<>();
         initialStates.forEach(initial::add);
-        while (solution == null) {
+        int current = 0;
+        while (solution == null || !goalTester.goalReached(solution)) {
+            if (current++ > limit) {
+                return solution;
+            }
             solution = search.solve(initialStates, objectiveFunction, goalTester);
             initialStates = randomizer.randomState(initial.size());
         }

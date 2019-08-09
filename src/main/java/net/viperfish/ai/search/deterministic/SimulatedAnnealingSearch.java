@@ -9,6 +9,12 @@ import java.util.Random;
 
 public abstract class SimulatedAnnealingSearch implements LocalSearch {
 
+    private int maxTemp;
+
+    public SimulatedAnnealingSearch(int maxTemp) {
+        this.maxTemp = maxTemp;
+    }
+
     @Override
     public State solve(Iterable<? extends State> initialStates, ObjectiveFunction objectiveFunction, GoalTester goalTester) {
         if (!initialStates.iterator().hasNext()) {
@@ -17,7 +23,7 @@ public abstract class SimulatedAnnealingSearch implements LocalSearch {
         State current = initialStates.iterator().next();
         int t = 1;
         Random rand = new Random();
-        while (true) {
+        while (t++ < maxTemp) {
             if (goalTester.goalReached(current)) {
                 return current;
             }
@@ -37,6 +43,7 @@ public abstract class SimulatedAnnealingSearch implements LocalSearch {
                 }
             }
         }
+        return current;
     }
 
     protected abstract double schedule(int t);

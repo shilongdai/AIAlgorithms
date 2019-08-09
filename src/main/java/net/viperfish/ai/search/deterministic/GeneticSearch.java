@@ -10,9 +10,11 @@ public class GeneticSearch implements LocalSearch {
 
     private double mutationChance;
     private Genetic gene;
+    private int limit;
 
-    public GeneticSearch(double mutationChance, Genetic gene) {
+    public GeneticSearch(double mutationChance, Genetic gene, int limit) {
         this.mutationChance = mutationChance;
+        this.limit = limit;
         this.gene = gene;
     }
 
@@ -21,7 +23,8 @@ public class GeneticSearch implements LocalSearch {
         List<State> population = new ArrayList<>();
         Random rand = new Random();
         initialStates.forEach(population::add);
-        while (true) {
+        int current = 0;
+        while (current++ < limit) {
             RandomCollection<State> selector = new RandomCollection<>(rand);
             for (State s : population) {
                 if (goalTester.goalReached(s)) {
@@ -41,5 +44,19 @@ public class GeneticSearch implements LocalSearch {
                 population.add(offspring);
             }
         }
+        return bestOfPop(population, objectiveFunction);
+    }
+
+    private State bestOfPop(List<State> pop, ObjectiveFunction f) {
+        State best = null;
+        double bestVal = Double.NEGATIVE_INFINITY;
+        for (State s : pop) {
+            double v = f.evaluate(s);
+            if (v > bestVal) {
+                best = s;
+                bestVal = v;
+            }
+        }
+        return best;
     }
 }
