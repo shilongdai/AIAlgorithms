@@ -20,6 +20,7 @@ public class RandomRestartHillClimb implements LocalSearch {
     @Override
     public State solve(Iterable<? extends State> initialStates, ObjectiveFunction objectiveFunction, GoalTester goalTester) {
         State solution = null;
+        double best = Double.NEGATIVE_INFINITY;
         List<State> initial = new ArrayList<>();
         initialStates.forEach(initial::add);
         int current = 0;
@@ -27,7 +28,14 @@ public class RandomRestartHillClimb implements LocalSearch {
             if (current++ > limit) {
                 return solution;
             }
-            solution = search.solve(initialStates, objectiveFunction, goalTester);
+            State buffer = search.solve(initialStates, objectiveFunction, goalTester);
+            if (buffer != null) {
+                double val = objectiveFunction.evaluate(buffer);
+                if (val > best) {
+                    solution = buffer;
+                    best = val;
+                }
+            }
             initialStates = randomizer.randomState(initial.size());
         }
         return solution;

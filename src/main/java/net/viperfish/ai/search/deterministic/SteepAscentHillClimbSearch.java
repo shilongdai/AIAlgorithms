@@ -35,7 +35,7 @@ public class SteepAscentHillClimbSearch implements LocalSearch {
                     return current;
                 }
             } else {
-                return best;
+                return current;
             }
         }
     }
