@@ -42,6 +42,18 @@ public class EquivalenceSentence extends ActionGeneratingSentence {
     }
 
     @Override
+    public Sentence replace(Sentence original, Sentence replaceWith) {
+        if (side1.equals(original)) {
+            return new EquivalenceSentence(replaceWith, side2);
+        }
+        if (side2.equals(original)) {
+            return new EquivalenceSentence(side1, replaceWith);
+        }
+
+        throw new IllegalArgumentException("Neither of the sentence in the equivalence relation matches the specified sentence to replace");
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -53,5 +65,16 @@ public class EquivalenceSentence extends ActionGeneratingSentence {
     @Override
     public int hashCode() {
         return Objects.hash(side1, side2);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('(');
+        sb.append(side1.toString());
+        sb.append('⇔');
+        sb.append(side2.toString());
+        sb.append(')');
+        return sb.toString();
     }
 }

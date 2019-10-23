@@ -63,6 +63,17 @@ public class ConjunctSentence extends ActionGeneratingSentence {
     }
 
     @Override
+    public Sentence replace(Sentence original, Sentence replaceWith) {
+        if (this.conjuncts.contains(original)) {
+            Set<Sentence> newSet = new HashSet<>(this.conjuncts);
+            newSet.remove(original);
+            newSet.add(replaceWith);
+            return new ConjunctSentence(newSet);
+        }
+        throw new IllegalArgumentException("Expected original to be part of this composite sentence");
+    }
+
+    @Override
     public Collection<Sentence> children() {
         return new HashSet<>(conjuncts);
     }
@@ -78,5 +89,18 @@ public class ConjunctSentence extends ActionGeneratingSentence {
     @Override
     public int hashCode() {
         return Objects.hash(conjuncts);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('(');
+        for (Sentence s : this.children()) {
+            sb.append(s.toString());
+            sb.append('^');
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(')');
+        return sb.toString();
     }
 }

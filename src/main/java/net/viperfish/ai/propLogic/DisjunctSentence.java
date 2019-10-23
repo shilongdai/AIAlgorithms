@@ -6,7 +6,7 @@ public class DisjunctSentence extends ActionGeneratingSentence {
 
     private Set<Sentence> disjoints;
 
-    public DisjunctSentence(Set<? extends Sentence> disjoints) {
+    public DisjunctSentence(Collection<? extends Sentence> disjoints) {
         if (disjoints == null || disjoints.size() == 0) {
             throw new IllegalArgumentException("Expected non-empty disjoint set");
         }
@@ -69,6 +69,17 @@ public class DisjunctSentence extends ActionGeneratingSentence {
     }
 
     @Override
+    public Sentence replace(Sentence original, Sentence replaceWith) {
+        if (this.disjoints.contains(original)) {
+            Set<Sentence> newSet = new HashSet<>(this.disjoints);
+            newSet.remove(original);
+            newSet.add(replaceWith);
+            return new DisjunctSentence(newSet);
+        }
+        throw new IllegalArgumentException("Expected original to be part of this composite sentence");
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -79,5 +90,18 @@ public class DisjunctSentence extends ActionGeneratingSentence {
     @Override
     public int hashCode() {
         return Objects.hash(disjoints);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('(');
+        for (Sentence s : this.children()) {
+            sb.append(s.toString());
+            sb.append('∨');
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(')');
+        return sb.toString();
     }
 }

@@ -47,6 +47,17 @@ public class ImplicationSentence extends ActionGeneratingSentence {
     }
 
     @Override
+    public Sentence replace(Sentence original, Sentence replaceWith) {
+        if (condition.equals(original)) {
+            return new ImplicationSentence(replaceWith, associate);
+        }
+        if (associate.equals(original)) {
+            return new ImplicationSentence(condition, replaceWith);
+        }
+        throw new IllegalArgumentException("Expected the given sentence to match condition or associate. It matched neither");
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -58,5 +69,12 @@ public class ImplicationSentence extends ActionGeneratingSentence {
     @Override
     public int hashCode() {
         return Objects.hash(condition, associate);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('(').append(condition.toString()).append("⇒").append(associate.toString()).append(')');
+        return sb.toString();
     }
 }

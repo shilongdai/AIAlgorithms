@@ -53,4 +53,9 @@ public class LiteralSentence implements Sentence {
     public int hashCode() {
         return Objects.hash(literal);
     }
+
+    @Override
+    public String toString() {
+        return this.literal;
+    }
 }

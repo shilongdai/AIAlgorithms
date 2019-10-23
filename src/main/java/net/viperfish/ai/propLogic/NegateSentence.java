@@ -7,6 +7,9 @@ public class NegateSentence extends ActionGeneratingSentence {
     private Sentence toNegate;
 
     public NegateSentence(Sentence toNegate) {
+        if (toNegate == null) {
+            throw new IllegalArgumentException("the parameter cannot be null");
+        }
         this.toNegate = toNegate;
     }
 
@@ -37,5 +40,31 @@ public class NegateSentence extends ActionGeneratingSentence {
 
     public Sentence original() {
         return this.toNegate;
+    }
+
+    @Override
+    public Sentence replace(Sentence original, Sentence replaceWith) {
+        if (original.equals(this.toNegate)) {
+            return new NegateSentence(replaceWith);
+        }
+        throw new IllegalArgumentException("Expected the specified sentence to match the sentence to negate, it did not");
+    }
+
+    @Override
+    public String toString() {
+        return "¬" + this.toNegate.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NegateSentence that = (NegateSentence) o;
+        return toNegate.equals(that.toNegate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(toNegate);
     }
 }
