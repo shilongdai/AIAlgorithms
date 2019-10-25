@@ -59,6 +59,11 @@ public class ConjunctSentence extends ActionGeneratingSentence {
                 }
             }
         }
+
+        if (conjunctGroups.size() != 0) {
+            result.add(new UnwrapConjunctRule(this));
+        }
+
         return result;
     }
 

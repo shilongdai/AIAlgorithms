@@ -4,7 +4,6 @@ import net.viperfish.ai.search.State;
 import net.viperfish.ai.search.deterministic.HeuristicGoalTester;
 import net.viperfish.ai.search.deterministic.ObjectiveFunction;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,19 +16,29 @@ public class CNFHeuristic implements HeuristicGoalTester, ObjectiveFunction {
             throw new IllegalArgumentException("This heuristic applies only to propositional sentences");
         }
         Sentence s = (Sentence) state;
-        double negateCount = countSentenceType(s, Collections.singletonList(NegateSentence.class));
         double implicationCount = countSentenceType(s, new HashSet<>(Collections.singletonList(ImplicationSentence.class)));
         double equivalenceCount = countSentenceType(s, new HashSet<>(Collections.singletonList(EquivalenceSentence.class)));
         double depth = depthCount(s);
-        double literalCount = countSentenceType(s, new HashSet<>(Arrays.asList(LiteralSentence.class)));
+        double disjunctOverConjunctCount = disjunctOverConjunctCount(s);
+        double nonNegNegateCount = nonLiteralNegateCount(s);
 
-        return equivalenceCount * 100 + implicationCount * 5 + depth;
+        if (equivalenceCount != 0) {
+            return 100000 * equivalenceCount;
+        }
+        if (implicationCount != 0) {
+            return 10000 * implicationCount;
+        }
+        if (nonNegNegateCount != 0) {
+            return 1000 * nonNegNegateCount;
+        }
+        if (disjunctOverConjunctCount != 0) {
+            return 100 * disjunctOverConjunctCount;
+        }
+        return depth;
     }
 
     @Override
     public boolean goalReached(State toTest) {
-        System.out.println("Testing: " + toTest.toString());
-        System.out.println("Heuristic:" + heuristic(toTest));
         if (!(toTest instanceof Sentence)) {
             throw new IllegalArgumentException("This heuristic applies only to propositional sentences");
         }
@@ -86,9 +95,28 @@ public class CNFHeuristic implements HeuristicGoalTester, ObjectiveFunction {
     }
 
 
+    private int disjunctOverConjunctCount(Sentence s) {
+        int count = 0;
+        for (Sentence c : s.children()) {
+            if (c instanceof ConjunctSentence && s instanceof DisjunctSentence) {
+                count += 1;
+                break;
+            }
+            count += disjunctOverConjunctCount(c);
+        }
+        return count;
+    }
+
+
     private int depthCount(Sentence s) {
         if (s instanceof LiteralSentence) {
             return 1;
+        }
+
+        if (s instanceof NegateSentence) {
+            if (((NegateSentence) s).original() instanceof LiteralSentence) {
+                return 1;
+            }
         }
 
         int max = 0;
@@ -100,6 +128,22 @@ public class CNFHeuristic implements HeuristicGoalTester, ObjectiveFunction {
         }
 
         return max + 1;
+    }
+
+
+    int nonLiteralNegateCount(Sentence s) {
+        int count = 0;
+        if (s instanceof NegateSentence) {
+            if (!(((NegateSentence) s).original() instanceof LiteralSentence)) {
+                count += 1;
+            }
+        }
+
+        for (Sentence c : s.children()) {
+            count += nonLiteralNegateCount(c);
+        }
+
+        return count;
     }
 
 

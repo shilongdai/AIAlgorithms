@@ -60,6 +60,11 @@ public class DisjunctSentence extends ActionGeneratingSentence {
                 }
             }
         }
+
+        if (disjunctGroups.size() != 0) {
+            result.add(new UnwrapDisjunctRule(this));
+        }
+
         return result;
     }
 
