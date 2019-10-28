@@ -57,7 +57,7 @@ public final class CNFUtils {
             progressTracker.put(i, 0);
         }
 
-        while (!processingStack.empty()) {
+        while (true) {
             int next = processingStack.pop();
             if (next == depth - 1) {
                 Set<Sentence> disjunctSet = new HashSet<>();
@@ -72,18 +72,52 @@ public final class CNFUtils {
                         disjunctSet.addAll(cnfPart.children());
                     }
                 }
-                conjunctSet.add(new DisjunctSentence(disjunctSet));
+
+                // filter contradictions
+                Map<String, Boolean> contrTracker = new HashMap<>();
+                Set<Sentence> finalDisjunct = new HashSet<>(disjunctSet);
+                for (Sentence s : disjunctSet) {
+                    if (s instanceof LiteralSentence) {
+                        LiteralSentence cnfLiteral = (LiteralSentence) s;
+                        if (!contrTracker.getOrDefault(cnfLiteral.getLiteral(), true)) {
+                            finalDisjunct.remove(new NegateSentence(cnfLiteral));
+                        } else {
+                            contrTracker.put(cnfLiteral.getLiteral(), true);
+                        }
+                    }
+                    if (s instanceof NegateSentence) {
+                        NegateSentence cnfNegative = (NegateSentence) s;
+                        LiteralSentence negateLiteral = (LiteralSentence) cnfNegative.original();
+                        if (contrTracker.getOrDefault(negateLiteral.getLiteral(), false)) {
+                            finalDisjunct.remove(negateLiteral);
+                        } else {
+                            contrTracker.put(negateLiteral.getLiteral(), false);
+                        }
+                    }
+                }
+
+                if (finalDisjunct.size() != 1) {
+                    conjunctSet.add(new DisjunctSentence(finalDisjunct));
+                } else {
+                    conjunctSet.add(finalDisjunct.iterator().next());
+                }
+                progressTracker.put(next, progressTracker.get(next) + 1);
             }
-            progressTracker.put(next, progressTracker.get(next) + 1);
 
             if (progressTracker.get(next) != tracker.get(next).size()) {
                 if (next != depth - 1) {
+                    processingStack.push(next);
                     processingStack.push(next + 1);
                 } else {
                     processingStack.push(next);
                 }
             } else {
+                if (processingStack.empty()) {
+                    break;
+                }
                 progressTracker.put(next, 0);
+                int recurseTarget = processingStack.peek();
+                progressTracker.put(recurseTarget, progressTracker.get(recurseTarget) + 1);
             }
         }
         return new ConjunctSentence(conjunctSet);

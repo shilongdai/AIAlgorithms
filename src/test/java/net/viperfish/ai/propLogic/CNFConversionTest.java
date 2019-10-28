@@ -3,11 +3,9 @@ package net.viperfish.ai.propLogic;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class CNFLocalSearchTest {
+public class CNFConversionTest {
 
     @Test
     public void testSimpleCNFConversion() {
@@ -18,9 +16,22 @@ public class CNFLocalSearchTest {
         Sentence bOrC = new DisjunctSentence(Arrays.asList(b, c));
         EquivalenceSentence aEqualBOrC = new EquivalenceSentence(a, bOrC);
 
-        Sentence result = CNFUtils.toCNF(aEqualBOrC);
-        verifyCnf(result);
+        ConjunctSentence result = CNFUtils.toCNF(aEqualBOrC);
+        verifyCnf(aEqualBOrC, result);
 
+    }
+
+    @Test
+    public void verifyDisjunctCNFConversion() {
+        Sentence a = new ConjunctSentence(Arrays.asList(new LiteralSentence("a"), new LiteralSentence("b"), new LiteralSentence("c")));
+        Sentence b = new ConjunctSentence(Arrays.asList(new LiteralSentence("d"), new LiteralSentence("e"), new LiteralSentence("f")));
+        Sentence c = new ConjunctSentence(Arrays.asList(new LiteralSentence("g"), new LiteralSentence("h"), new LiteralSentence("i")));
+
+        Sentence disjunct = new DisjunctSentence(Arrays.asList(a, b, c));
+
+        ConjunctSentence cnf = CNFUtils.toCNF(disjunct);
+
+        verifyCnf(disjunct, cnf);
     }
 
     @Test
@@ -58,18 +69,22 @@ public class CNFLocalSearchTest {
         Sentence possibilityDisjunct = new DisjunctSentence(possiblilityDisjunctSet);
         Sentence implication = new ImplicationSentence(richard, bill);
         ConjunctSentence finalKB = new ConjunctSentence(Arrays.asList(possibilityDisjunct, implication));
+        System.out.println(finalKB);
 
-        Sentence cnf = CNFUtils.toCNF(finalKB);
+        ConjunctSentence cnf = CNFUtils.toCNF(finalKB);
+        System.out.println(cnf);
 
-        verifyCnf(cnf);
+        verifyCnf(finalKB, cnf);
     }
 
-    private void verifyCnf(Sentence result) {
+    private void verifyCnf(Sentence original, ConjunctSentence result) {
         Assert.assertNotEquals(null, result);
         for (Sentence child : result.children()) {
             Assert.assertTrue(isCNFDisjunct(child));
         }
         Assert.assertEquals(ConjunctSentence.class, result.getClass());
+
+        verifyTruthTable(original, result);
     }
 
     private boolean isCNFDisjunct(Sentence s) {
@@ -93,6 +108,43 @@ public class CNFLocalSearchTest {
             return s instanceof LiteralSentence;
         }
         return s instanceof LiteralSentence;
+    }
+
+    private void verifyTruthTable(Sentence original, ConjunctSentence cnf) {
+        Set<String> cnfSymbols = getSymbols(original);
+        Set<String> origSymbols = getSymbols(cnf);
+
+        Assert.assertEquals(cnfSymbols, origSymbols);
+
+        Map<String, Boolean> assignment = new HashMap<>();
+        recursiveVerifyTruthTable(original, cnf, assignment, cnfSymbols);
+    }
+
+    private void recursiveVerifyTruthTable(Sentence original, ConjunctSentence cnf, Map<String, Boolean> assignment, Set<String> remainingSymbols) {
+        if (remainingSymbols.size() == 0) {
+            Assert.assertEquals(cnf.evaluates(assignment), original.evaluates(assignment));
+            return;
+        }
+        String nextSymbol = remainingSymbols.iterator().next();
+        remainingSymbols.remove(nextSymbol);
+        assignment.put(nextSymbol, true);
+        recursiveVerifyTruthTable(original, cnf, assignment, remainingSymbols);
+        assignment.put(nextSymbol, false);
+        recursiveVerifyTruthTable(original, cnf, assignment, remainingSymbols);
+    }
+
+    private Set<String> getSymbols(Sentence sentence) {
+        Set<String> result = new HashSet<>();
+        if (sentence instanceof LiteralSentence) {
+            result.add(((LiteralSentence) sentence).getLiteral());
+            return result;
+        }
+
+        for (Sentence c : sentence.children()) {
+            result.addAll(getSymbols(c));
+        }
+
+        return result;
     }
 
 }
