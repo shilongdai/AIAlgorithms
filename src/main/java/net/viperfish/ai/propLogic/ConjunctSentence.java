@@ -63,6 +63,9 @@ public class ConjunctSentence extends ActionGeneratingSentence {
         if (conjunctGroups.size() != 0) {
             result.add(new UnwrapConjunctRule(this));
         }
+        if (conjuncts.size() == 1) {
+            result.add(new RemoveRedundantConjunctWrap(this));
+        }
 
         return result;
     }

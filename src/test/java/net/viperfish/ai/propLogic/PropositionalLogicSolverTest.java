@@ -5,26 +5,13 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-public class CNFLocalSearchTest {
+public abstract class PropositionalLogicSolverTest {
 
     @Test
-    public void testSimpleCNFConversion() {
-        Sentence a = new LiteralSentence("a");
-        Sentence b = new LiteralSentence("b");
-        Sentence c = new LiteralSentence("c");
-
-        Sentence bOrC = new DisjunctSentence(Arrays.asList(b, c));
-        EquivalenceSentence aEqualBOrC = new EquivalenceSentence(a, bOrC);
-
-        Sentence result = CNFUtils.toCNF(aEqualBOrC);
-        verifyCnf(result);
-
-    }
-
-    @Test
-    public void verifyComplexCNFConversion() {
+    public void testSolver() {
         Sentence michael = new LiteralSentence("M");
         Sentence bill = new LiteralSentence("B");
         Sentence richard = new LiteralSentence("R");
@@ -61,38 +48,13 @@ public class CNFLocalSearchTest {
 
         Sentence cnf = CNFUtils.toCNF(finalKB);
 
-        verifyCnf(cnf);
+        PropositionalLogicSolver solver = getSolver();
+        Map<String, Boolean> model = solver.solve((ConjunctSentence) cnf);
+
+        Assert.assertNotEquals(null, model);
+
     }
 
-    private void verifyCnf(Sentence result) {
-        Assert.assertNotEquals(null, result);
-        for (Sentence child : result.children()) {
-            Assert.assertTrue(isCNFDisjunct(child));
-        }
-        Assert.assertEquals(ConjunctSentence.class, result.getClass());
-    }
-
-    private boolean isCNFDisjunct(Sentence s) {
-        if (!(s instanceof DisjunctSentence) && !(s instanceof LiteralSentence) && !(s instanceof NegateSentence)) {
-            return false;
-        }
-        if (isNegateOrLiteral(s)) {
-            return true;
-        }
-        for (Sentence children : s.children()) {
-            if (!isNegateOrLiteral(children)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean isNegateOrLiteral(Sentence s) {
-        if (s instanceof NegateSentence) {
-            s = ((NegateSentence) s).original();
-            return s instanceof LiteralSentence;
-        }
-        return s instanceof LiteralSentence;
-    }
+    protected abstract PropositionalLogicSolver getSolver();
 
 }

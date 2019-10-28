@@ -65,6 +65,10 @@ public class DisjunctSentence extends ActionGeneratingSentence {
             result.add(new UnwrapDisjunctRule(this));
         }
 
+        if (disjoints.size() == 1) {
+            result.add(new RemoveRedundantDisjunctRule(this));
+        }
+
         return result;
     }
 

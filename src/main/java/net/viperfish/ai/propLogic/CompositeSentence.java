@@ -27,6 +27,7 @@ public abstract class CompositeSentence implements Sentence {
 
     }
 
+
     public static class ReplacementRule implements Rule<Sentence> {
 
         private Rule<? extends Sentence> toApply;

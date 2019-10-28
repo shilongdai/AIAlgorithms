@@ -18,6 +18,10 @@ public class LiteralSentence implements Sentence {
         this.literal = literal;
     }
 
+    public String getLiteral() {
+        return literal;
+    }
+
     @Override
     public boolean evaluates(Map<String, Boolean> literals) {
         if (literals.containsKey(this.literal)) {
