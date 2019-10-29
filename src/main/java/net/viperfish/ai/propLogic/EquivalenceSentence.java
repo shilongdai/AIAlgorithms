@@ -72,7 +72,7 @@ public class EquivalenceSentence extends ActionGeneratingSentence {
         StringBuilder sb = new StringBuilder();
         sb.append('(');
         sb.append(side1.toString());
-        sb.append('⇔');
+        sb.append("<=>");
         sb.append(side2.toString());
         sb.append(')');
         return sb.toString();

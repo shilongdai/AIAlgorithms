@@ -52,7 +52,7 @@ public class NegateSentence extends ActionGeneratingSentence {
 
     @Override
     public String toString() {
-        return "¬" + this.toNegate.toString();
+        return "~" + this.toNegate.toString();
     }
 
     @Override

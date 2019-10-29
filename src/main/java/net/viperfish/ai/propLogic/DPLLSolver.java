@@ -7,13 +7,13 @@ public class DPLLSolver implements PropositionalLogicSolver {
 
     @Override
     public Map<String, Boolean> solve(ConjunctSentence cnf) {
-        Set<Map<String, CNFSymbol>> clauses = sentenceToClauses(cnf);
+        Set<Map<String, CNFSymbol>> clauses = CNFUtils.asCNFSymbols(cnf);
         Map<String, Set<Map<String, CNFSymbol>>> clauseMapping = literalClauseMapping(clauses);
         Set<CNFSymbol> pureSymbols = pureSymbols(clauseMapping);
         Set<String> unassignedSet = new HashSet<>(clauseMapping.keySet());
 
         Stack<String> assignments = new Stack<>();
-        Map<String, Boolean> tried = new HashMap<>();
+        Map<String, List<Boolean>> untried = new HashMap<>();
         Map<String, Boolean> currentAssignment = new HashMap<>();
 
         for (CNFSymbol c : pureSymbols) {
@@ -21,28 +21,29 @@ public class DPLLSolver implements PropositionalLogicSolver {
             unassignedSet.remove(c.getLiteral());
         }
         List<String> unassigned = new ArrayList<>(unassignedSet);
+        for (String s : unassigned) {
+            untried.put(s, new ArrayList<>(Arrays.asList(true, false)));
+        }
 
         while (!unassigned.isEmpty()) {
             String next = unassigned.get(0);
-            boolean nextVal = !tried.getOrDefault(next, false);
+            List<Boolean> untriedList = untried.get(next);
+            if (untriedList.isEmpty()) {
+                if (assignments.size() == 0) {
+                    break;
+                }
+                untriedList.add(true);
+                untriedList.add(false);
+                unassigned.add(0, assignments.pop());
+                continue;
+            }
+            boolean nextVal = untriedList.remove(0);
             currentAssignment.put(next, nextVal);
             if (!sentenceFalse(clauses, currentAssignment)) {
-                Map<String, Boolean> assign = new HashMap<>();
-                assign.put(next, nextVal);
                 assignments.push(next);
                 unassigned.remove(0);
-                tried.putIfAbsent(next, nextVal);
             } else {
                 currentAssignment.remove(next);
-                if (tried.containsKey(next)) {
-                    tried.remove(next);
-                    if (assignments.size() == 0) {
-                        break;
-                    }
-                    unassigned.add(0, assignments.pop());
-                } else {
-                    tried.put(next, nextVal);
-                }
             }
         }
 
@@ -52,34 +53,6 @@ public class DPLLSolver implements PropositionalLogicSolver {
         return null;
     }
 
-    private Set<Map<String, CNFSymbol>> sentenceToClauses(ConjunctSentence cnf) {
-        Set<Map<String, CNFSymbol>> result = new HashSet<>();
-
-        for (Sentence s : cnf.children()) {
-            Map<String, CNFSymbol> clauseSet = new HashMap<>();
-            if (s instanceof DisjunctSentence) {
-                DisjunctSentence clauseSentence = (DisjunctSentence) s;
-                for (Sentence literal : clauseSentence.children()) {
-                    if (literal instanceof LiteralSentence) {
-                        clauseSet.put(((LiteralSentence) literal).getLiteral(), new CNFSymbol(((LiteralSentence) literal).getLiteral(), false));
-                    } else if (literal instanceof NegateSentence) {
-                        literal = ((NegateSentence) literal).original();
-                        if (literal instanceof LiteralSentence) {
-                            clauseSet.put(((LiteralSentence) literal).getLiteral(), new CNFSymbol(((LiteralSentence) literal).getLiteral(), true));
-                        } else {
-                            throw new IllegalArgumentException("Expected CNF Sentence");
-                        }
-                    } else {
-                        throw new IllegalArgumentException("Expected CNF Sentence");
-                    }
-                }
-                result.add(clauseSet);
-            } else {
-                throw new IllegalArgumentException("Expected CNF Sentence");
-            }
-        }
-        return result;
-    }
 
     private Map<String, Set<Map<String, CNFSymbol>>> literalClauseMapping(Set<Map<String, CNFSymbol>> clauses) {
         Map<String, Set<Map<String, CNFSymbol>>> result = new HashMap<>();
@@ -129,7 +102,7 @@ public class DPLLSolver implements PropositionalLogicSolver {
             for (Map.Entry<String, CNFSymbol> symbolEntry : clause.entrySet()) {
                 if (!assignment.containsKey(symbolEntry.getKey())) {
                     clauseTruth = true;
-                    continue;
+                    break;
                 }
                 boolean assigned = assignment.get(symbolEntry.getKey());
                 if (symbolEntry.getValue().isNegate()) {
@@ -138,13 +111,14 @@ public class DPLLSolver implements PropositionalLogicSolver {
 
                 if (assigned) {
                     clauseTruth = true;
+                    break;
                 }
             }
             if (!clauseTruth) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
 }

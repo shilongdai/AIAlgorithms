@@ -105,7 +105,7 @@ public class ConjunctSentence extends ActionGeneratingSentence {
         sb.append('(');
         for (Sentence s : this.children()) {
             sb.append(s.toString());
-            sb.append('^');
+            sb.append('&');
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append(')');

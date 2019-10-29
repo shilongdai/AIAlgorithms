@@ -7,6 +7,68 @@ public final class CNFUtils {
     private CNFUtils() {
     }
 
+    public static Set<Map<String, CNFSymbol>> asCNFSymbols(ConjunctSentence cnf) {
+        Set<Map<String, CNFSymbol>> result = new HashSet<>();
+
+        for (Sentence s : cnf.children()) {
+            Map<String, CNFSymbol> clauseSet = new HashMap<>();
+            if (s instanceof DisjunctSentence) {
+                DisjunctSentence clauseSentence = (DisjunctSentence) s;
+                boolean contradiction = false;
+                for (Sentence c : clauseSentence.children()) {
+                    if (c instanceof LiteralSentence) {
+                        LiteralSentence literal = (LiteralSentence) c;
+                        if (!clauseSet.containsKey(literal.getLiteral())) {
+                            clauseSet.put(literal.getLiteral(), new CNFSymbol(literal.getLiteral(), false));
+                        } else {
+                            CNFSymbol prev = clauseSet.get(literal.getLiteral());
+                            if (prev.isNegate()) {
+                                contradiction = true;
+                                break;
+                            }
+                        }
+                    } else if (c instanceof NegateSentence) {
+                        NegateSentence negateSentence = (NegateSentence) c;
+                        if (negateSentence.original() instanceof LiteralSentence) {
+                            LiteralSentence literal = (LiteralSentence) negateSentence.original();
+                            if (!clauseSet.containsKey(literal.getLiteral())) {
+                                clauseSet.put(literal.getLiteral(), new CNFSymbol(literal.getLiteral(), true));
+                            } else {
+                                CNFSymbol prev = clauseSet.get(literal.getLiteral());
+                                if (!prev.isNegate()) {
+                                    contradiction = true;
+                                    break;
+                                }
+                            }
+
+                        } else {
+                            throw new IllegalArgumentException("Expected CNF Sentence");
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Expected CNF Sentence");
+                    }
+                }
+                if (!contradiction) {
+                    result.add(clauseSet);
+                }
+            } else if (s instanceof LiteralSentence) {
+                Map<String, CNFSymbol> singleMap = new HashMap<>();
+                LiteralSentence literalCNF = (LiteralSentence) s;
+                singleMap.put(literalCNF.getLiteral(), new CNFSymbol(literalCNF.getLiteral(), false));
+                result.add(singleMap);
+            } else if (s instanceof NegateSentence) {
+                Map<String, CNFSymbol> singleNegate = new HashMap<>();
+                NegateSentence literalCNF = (NegateSentence) s;
+                LiteralSentence orig = (LiteralSentence) literalCNF.original();
+                singleNegate.put(orig.getLiteral(), new CNFSymbol(orig.getLiteral(), true));
+                result.add(singleNegate);
+            } else {
+                throw new IllegalArgumentException("Expected CNF Sentence");
+            }
+        }
+        return result;
+    }
+
     public static ConjunctSentence toCNF(Sentence sentence) {
         if (sentence instanceof LiteralSentence) {
             return literalToCNF((LiteralSentence) sentence);
@@ -73,33 +135,10 @@ public final class CNFUtils {
                     }
                 }
 
-                // filter contradictions
-                Map<String, Boolean> contrTracker = new HashMap<>();
-                Set<Sentence> finalDisjunct = new HashSet<>(disjunctSet);
-                for (Sentence s : disjunctSet) {
-                    if (s instanceof LiteralSentence) {
-                        LiteralSentence cnfLiteral = (LiteralSentence) s;
-                        if (!contrTracker.getOrDefault(cnfLiteral.getLiteral(), true)) {
-                            finalDisjunct.remove(new NegateSentence(cnfLiteral));
-                        } else {
-                            contrTracker.put(cnfLiteral.getLiteral(), true);
-                        }
-                    }
-                    if (s instanceof NegateSentence) {
-                        NegateSentence cnfNegative = (NegateSentence) s;
-                        LiteralSentence negateLiteral = (LiteralSentence) cnfNegative.original();
-                        if (contrTracker.getOrDefault(negateLiteral.getLiteral(), false)) {
-                            finalDisjunct.remove(negateLiteral);
-                        } else {
-                            contrTracker.put(negateLiteral.getLiteral(), false);
-                        }
-                    }
-                }
-
-                if (finalDisjunct.size() != 1) {
-                    conjunctSet.add(new DisjunctSentence(finalDisjunct));
+                if (disjunctSet.size() != 1) {
+                    conjunctSet.add(new DisjunctSentence(disjunctSet));
                 } else {
-                    conjunctSet.add(finalDisjunct.iterator().next());
+                    conjunctSet.add(disjunctSet.iterator().next());
                 }
                 progressTracker.put(next, progressTracker.get(next) + 1);
             }

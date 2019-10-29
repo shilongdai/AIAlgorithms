@@ -3,77 +3,41 @@ package net.viperfish.ai.propLogic;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class CNFConversionTest {
 
     @Test
+    public void testProposition() {
+        Sentence complexSentence = PropTestUtil.getComplexSentence();
+        Map<String, Boolean> assignments = new HashMap<>();
+        assignments.put("R", false);
+        assignments.put("B", true);
+        assignments.put("S", true);
+        assignments.put("M", false);
+        assignments.put("MT", false);
+        ConjunctSentence cnfForm = CNFUtils.toCNF(complexSentence);
+
+        Assert.assertTrue(cnfForm.evaluates(assignments));
+        Assert.assertTrue(complexSentence.evaluates(assignments));
+    }
+
+    @Test
     public void testSimpleCNFConversion() {
-        Sentence a = new LiteralSentence("a");
-        Sentence b = new LiteralSentence("b");
-        Sentence c = new LiteralSentence("c");
-
-        Sentence bOrC = new DisjunctSentence(Arrays.asList(b, c));
-        EquivalenceSentence aEqualBOrC = new EquivalenceSentence(a, bOrC);
-
+        Sentence aEqualBOrC = PropTestUtil.getSimpleSentence();
         ConjunctSentence result = CNFUtils.toCNF(aEqualBOrC);
         verifyCnf(aEqualBOrC, result);
 
     }
 
     @Test
-    public void verifyDisjunctCNFConversion() {
-        Sentence a = new ConjunctSentence(Arrays.asList(new LiteralSentence("a"), new LiteralSentence("b"), new LiteralSentence("c")));
-        Sentence b = new ConjunctSentence(Arrays.asList(new LiteralSentence("d"), new LiteralSentence("e"), new LiteralSentence("f")));
-        Sentence c = new ConjunctSentence(Arrays.asList(new LiteralSentence("g"), new LiteralSentence("h"), new LiteralSentence("i")));
-
-        Sentence disjunct = new DisjunctSentence(Arrays.asList(a, b, c));
-
-        ConjunctSentence cnf = CNFUtils.toCNF(disjunct);
-
-        verifyCnf(disjunct, cnf);
-    }
-
-    @Test
     public void verifyComplexCNFConversion() {
-        Sentence michael = new LiteralSentence("M");
-        Sentence bill = new LiteralSentence("B");
-        Sentence richard = new LiteralSentence("R");
-        Sentence sam = new LiteralSentence("S");
-        Sentence matt = new LiteralSentence("MT");
-
-        Sentence notMichael = new NegateSentence(michael);
-        Sentence notBill = new NegateSentence(bill);
-        Sentence notRichard = new NegateSentence(richard);
-        Sentence notSam = new NegateSentence(sam);
-        Sentence notMatt = new NegateSentence(matt);
-
-        Sentence mXorB = new DisjunctSentence(Arrays.asList(new ConjunctSentence(Arrays.asList(michael, notBill)), new ConjunctSentence(Arrays.asList(notMichael, bill))));
-        Sentence rXorS = new DisjunctSentence(Arrays.asList(new ConjunctSentence(Arrays.asList(richard, notSam)), new ConjunctSentence(Arrays.asList(notRichard, sam))));
-        Sentence matXorM = new DisjunctSentence(Arrays.asList(new ConjunctSentence(Arrays.asList(matt, notMichael)), new ConjunctSentence(Arrays.asList(notMatt, michael))));
-        Sentence bXorMat = new DisjunctSentence(Arrays.asList(new ConjunctSentence(Arrays.asList(bill, notMatt)), new ConjunctSentence(Arrays.asList(notBill, matt))));
-        Sentence bXorR = new DisjunctSentence(Arrays.asList(new ConjunctSentence(Arrays.asList(bill, notRichard)), new ConjunctSentence(Arrays.asList(notRichard, bill))));
-
-        Set<Sentence> possibleGroups = new HashSet<>(Arrays.asList(mXorB, rXorS, matXorM, bXorMat, bXorR));
-        Set<Sentence> possiblilityDisjunctSet = new HashSet<>();
-        for (Sentence s : possibleGroups) {
-            Set<Sentence> conjunctClause = new HashSet<>();
-            conjunctClause.add(new NegateSentence(s));
-            for (Sentence c : possibleGroups) {
-                if (c != s) {
-                    conjunctClause.add(c);
-                }
-            }
-            possiblilityDisjunctSet.add(new ConjunctSentence(conjunctClause));
-        }
-        Sentence possibilityDisjunct = new DisjunctSentence(possiblilityDisjunctSet);
-        Sentence implication = new ImplicationSentence(richard, bill);
-        ConjunctSentence finalKB = new ConjunctSentence(Arrays.asList(possibilityDisjunct, implication));
-        System.out.println(finalKB);
+        Sentence finalKB = PropTestUtil.getComplexSentence();
 
         ConjunctSentence cnf = CNFUtils.toCNF(finalKB);
-        System.out.println(cnf);
-
         verifyCnf(finalKB, cnf);
     }
 
@@ -122,15 +86,19 @@ public class CNFConversionTest {
 
     private void recursiveVerifyTruthTable(Sentence original, ConjunctSentence cnf, Map<String, Boolean> assignment, Set<String> remainingSymbols) {
         if (remainingSymbols.size() == 0) {
-            Assert.assertEquals(cnf.evaluates(assignment), original.evaluates(assignment));
+            boolean cnfEval = cnf.evaluates(assignment);
+            boolean originalEval = original.evaluates(assignment);
+            Assert.assertEquals(cnfEval, originalEval);
             return;
         }
         String nextSymbol = remainingSymbols.iterator().next();
-        remainingSymbols.remove(nextSymbol);
+        Set<String> newRemaining = new HashSet<>(remainingSymbols);
+        newRemaining.remove(nextSymbol);
+
         assignment.put(nextSymbol, true);
-        recursiveVerifyTruthTable(original, cnf, assignment, remainingSymbols);
+        recursiveVerifyTruthTable(original, cnf, assignment, newRemaining);
         assignment.put(nextSymbol, false);
-        recursiveVerifyTruthTable(original, cnf, assignment, remainingSymbols);
+        recursiveVerifyTruthTable(original, cnf, assignment, newRemaining);
     }
 
     private Set<String> getSymbols(Sentence sentence) {

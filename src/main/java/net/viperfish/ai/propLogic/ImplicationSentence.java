@@ -74,7 +74,7 @@ public class ImplicationSentence extends ActionGeneratingSentence {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('(').append(condition.toString()).append("⇒").append(associate.toString()).append(')');
+        sb.append('(').append(condition.toString()).append("->").append(associate.toString()).append(')');
         return sb.toString();
     }
 }
